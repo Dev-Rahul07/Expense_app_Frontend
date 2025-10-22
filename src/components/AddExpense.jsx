@@ -1,13 +1,9 @@
-
-import React, { use } from "react";
+import React, { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useState ,useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 
-
-const AddExpense = () => {  
-
+const AddExpense = () => {
   const navigate = useNavigate();
 
   const [data, setData] = useState({
@@ -15,44 +11,63 @@ const AddExpense = () => {
     ExpenseItem: "",
     ExpenseCost: "",
   });
+
   const userId = localStorage.getItem("UserId");
+
   useEffect(() => {
     if (!userId) {
       navigate("/login");
     }
   }, [userId, navigate]);
 
+  // Handle input changes
   const handleChange = (e) => {
-    setData({ ...data, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "ExpenseCost") {
+      // Only allow digits (integers)
+      if (/^\d*$/.test(value)) {
+        setData({ ...data, [name]: value });
+      }
+    } else {
+      setData({ ...data, [name]: value });
+    }
   };
-   
-  const handlesubmit = async (e) => {
+
+  // Handle form submit
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (data.ExpenseCost === "" || parseInt(data.ExpenseCost) === 0) {
+      toast.error("Expense Cost must be a non-zero integer");
+      return;
+    }
+
     try {
-      const response = await fetch("https://expense-app-backend-ibdf.onrender.com/api/add_expense/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, UserId: userId }),
-      });
+      const response = await fetch(
+        "https://expense-app-backend-ibdf.onrender.com/api/add_expense/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...data,
+            ExpenseCost: parseInt(data.ExpenseCost),
+            UserId: userId,
+          }),
+        }
+      );
 
       const res = await response.json();
       if (response.status === 201) {
         toast.success(res.message);
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 2000);
-      } 
-      else {
-        const result = await response.json();
-        toast.error(result.message);
+        setTimeout(() => navigate("/dashboard"), 2000);
+      } else {
+        toast.error(res.message);
       }
     } catch (error) {
       console.error("Error", error);
-      toast.error("somthing went Wrong...");
+      toast.error("Something went wrong...");
     }
   };
-
-
 
   return (
     <div className="container mt-5">
@@ -60,27 +75,24 @@ const AddExpense = () => {
         <h2>
           <i className="fas fa-plus me-2"></i>Add Expense
         </h2>
-        <p className="text-muted">
-           track Your New  expenses Here
-        </p>
+        <p className="text-muted">Track your new expenses here</p>
       </div>
 
       <form
-        onSubmit={handlesubmit}
-        className="p-4 border rounded  shadow  mx-auto"
+        onSubmit={handleSubmit}
+        className="p-4 border rounded shadow mx-auto"
         style={{ maxWidth: "400px" }}
       >
-        <div className="">
-          <label className="from-label">Expense Date</label>
+        <div className="mb-3">
+          <label className="form-label">Expense Date</label>
           <div className="input-group">
             <span className="input-group-text">
               <i className="fas fa-calendar-alt"></i>
             </span>
             <input
               type="date"
-              value={data.FullName}
+              value={data.ExpenseDate}
               name="ExpenseDate"
-              placeholder=""
               className="form-control"
               required
               onChange={handleChange}
@@ -88,8 +100,8 @@ const AddExpense = () => {
           </div>
         </div>
 
-        <div className="">
-          <label className="from-label">Expense Item</label>
+        <div className="mb-3">
+          <label className="form-label">Expense Item</label>
           <div className="input-group">
             <span className="input-group-text">
               <i className="fas fa-shopping-cart"></i>
@@ -107,7 +119,7 @@ const AddExpense = () => {
         </div>
 
         <div className="mb-3">
-          <label className="from-label">Expense Cost </label>
+          <label className="form-label">Expense Cost</label>
           <div className="input-group">
             <span className="input-group-text">
               <i className="fas fa-rupee-sign"></i>
@@ -116,7 +128,7 @@ const AddExpense = () => {
               type="text"
               value={data.ExpenseCost}
               name="ExpenseCost"
-              placeholder="Enter ammount spent"
+              placeholder="Enter amount spent"
               className="form-control"
               required
               onChange={handleChange}
@@ -126,9 +138,10 @@ const AddExpense = () => {
 
         <button className="btn btn-primary w-100">Add Expense</button>
       </form>
+
       <ToastContainer />
     </div>
   );
 };
 
-export default AddExpense
+export default AddExpense;
