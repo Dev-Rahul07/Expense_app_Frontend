@@ -7,7 +7,7 @@ export const ManageExpense = () => {
   const navigate = useNavigate();
   const UserId = localStorage.getItem("UserId");
   const [expenses, setExpenses] = useState([]);
-  const [editingExpense, setEditingExpense] = useState(null); // Modal open state
+  const [editingExpense, setEditingExpense] = useState(null);
   const [formData, setFormData] = useState({
     ExpenseDate: "",
     ExpenseItem: "",
@@ -17,7 +17,9 @@ export const ManageExpense = () => {
   // Fetch all expenses
   const fetchExpenses = async () => {
     try {
-      const response = await fetch(`https://expense-app-backend-ibdf.onrender.com/api/manage_expense/${UserId}`);
+      const response = await fetch(
+        `https://expense-app-backend-ibdf.onrender.com/api/manage_expense/${UserId}`
+      );
       const data = await response.json();
       setExpenses(data);
     } catch (error) {
@@ -34,10 +36,17 @@ export const ManageExpense = () => {
     }
   }, [UserId, navigate]);
 
-  // Handle form changes
+  // Handle form changes (integer-only for ExpenseCost)
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "ExpenseCost") {
+      // Only allow digits
+      if (/^\d*$/.test(value)) {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   // Open edit modal
@@ -52,12 +61,23 @@ export const ManageExpense = () => {
 
   // Save edited expense
   const handleSave = async () => {
+    if (formData.ExpenseCost === "" || parseInt(formData.ExpenseCost) === 0) {
+      toast.error("Expense Cost must be a non-zero integer");
+      return;
+    }
+
     try {
-      const response = await fetch(`https://expense-app-backend-ibdf.onrender.com/api/edit_expense/${editingExpense}/`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `https://expense-app-backend-ibdf.onrender.com/api/edit_expense/${editingExpense}/`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...formData,
+            ExpenseCost: parseInt(formData.ExpenseCost), // ensure integer
+          }),
+        }
+      );
 
       if (response.ok) {
         toast.success("Expense updated!");
@@ -77,9 +97,10 @@ export const ManageExpense = () => {
     if (!window.confirm("Are you sure you want to delete this expense?")) return;
 
     try {
-      const response = await fetch(`https://expense-app-backend-ibdf.onrender.com/api/delete_expense/${id}/`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `https://expense-app-backend-ibdf.onrender.com/api/delete_expense/${id}/`,
+        { method: "DELETE" }
+      );
 
       if (response.ok) {
         toast.success("Expense deleted!");
@@ -109,7 +130,6 @@ export const ManageExpense = () => {
           <table className="table table-hover align-middle text-center">
             <thead className="table-dark">
               <tr>
-                
                 <th>Date</th>
                 <th>Item</th>
                 <th>Cost (₹)</th>
@@ -120,15 +140,20 @@ export const ManageExpense = () => {
               {expenses.length > 0 ? (
                 expenses.map((ele) => (
                   <tr key={ele.id}>
-          
                     <td>{ele.ExpenseDate}</td>
                     <td>{ele.ExpenseItem}</td>
                     <td>{ele.ExpenseCost}</td>
                     <td>
-                      <button className="btn btn-sm btn-warning me-2" onClick={() => handleEdit(ele)}>
+                      <button
+                        className="btn btn-sm btn-warning me-2"
+                        onClick={() => handleEdit(ele)}
+                      >
                         <i className="fas fa-edit"></i>
                       </button>
-                      <button className="btn btn-sm btn-danger" onClick={() => handleDelete(ele.id)}>
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => handleDelete(ele.id)}
+                      >
                         <i className="fas fa-trash"></i>
                       </button>
                     </td>
@@ -152,8 +177,14 @@ export const ManageExpense = () => {
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header bg-primary text-white">
-                <h5 className="modal-title"><i className="fas fa-edit me-2"></i>Edit Expense</h5>
-                <button type="button" className="btn-close" onClick={() => setEditingExpense(null)}></button>
+                <h5 className="modal-title">
+                  <i className="fas fa-edit me-2"></i>Edit Expense
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setEditingExpense(null)}
+                ></button>
               </div>
               <div className="modal-body">
                 <div className="mb-3">
@@ -180,7 +211,7 @@ export const ManageExpense = () => {
                 <div className="mb-3">
                   <label className="form-label">Expense Cost</label>
                   <input
-                    type="number"
+                    type="text" // text instead of number
                     name="ExpenseCost"
                     className="form-control"
                     placeholder="Enter Amount"
@@ -190,8 +221,15 @@ export const ManageExpense = () => {
                 </div>
               </div>
               <div className="modal-footer">
-                <button className="btn btn-primary" onClick={handleSave}>Save changes</button>
-                <button className="btn btn-secondary" onClick={() => setEditingExpense(null)}>Close</button>
+                <button className="btn btn-primary" onClick={handleSave}>
+                  Save changes
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setEditingExpense(null)}
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
@@ -202,3 +240,4 @@ export const ManageExpense = () => {
     </div>
   );
 };
+
