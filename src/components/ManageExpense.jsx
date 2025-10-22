@@ -120,7 +120,7 @@ export const ManageExpense = () => {
               {expenses.length > 0 ? (
                 expenses.map((ele) => (
                   <tr key={ele.id}>
-                    <td>{ele.id}</td>
+          
                     <td>{ele.ExpenseDate}</td>
                     <td>{ele.ExpenseItem}</td>
                     <td>{ele.ExpenseCost}</td>
