@@ -50,7 +50,7 @@ const ChangePassword = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/forgot_password/${UserName}/`,
+        `https://expense-app-backend-ibdf.onrender.com/api/forgot_password/${UserName}/`,
         { method: "GET", headers: { "Content-Type": "application/json" } }
       );
 
