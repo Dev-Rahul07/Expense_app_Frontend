@@ -109,7 +109,7 @@ export const ManageExpense = () => {
           <table className="table table-hover align-middle text-center">
             <thead className="table-dark">
               <tr>
-                <th>ID</th>
+                
                 <th>Date</th>
                 <th>Item</th>
                 <th>Cost (₹)</th>
