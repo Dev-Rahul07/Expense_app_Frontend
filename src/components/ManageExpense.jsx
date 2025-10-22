@@ -53,7 +53,7 @@ export const ManageExpense = () => {
   // Save edited expense
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/edit_expense/${editingExpense}/`, {
+      const response = await fetch(`https://expense-app-backend-ibdf.onrender.com/api/edit_expense/${editingExpense}/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -77,7 +77,7 @@ export const ManageExpense = () => {
     if (!window.confirm("Are you sure you want to delete this expense?")) return;
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/delete_expense/${id}/`, {
+      const response = await fetch(`https://expense-app-backend-ibdf.onrender.com/api/delete_expense/${id}/`, {
         method: "DELETE",
       });
 
